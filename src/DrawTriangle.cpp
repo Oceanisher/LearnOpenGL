@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include "include/LearnOpenGLHeader.h"
+#include "../include/LearnOpenGLHeader.h"
 
 //回调函数，用来处理窗口大小变化时，重新设置OpenGL的渲染窗口大小
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);

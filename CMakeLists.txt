@@ -31,9 +31,11 @@ SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/
 # 创建可执行文件
 add_executable(TestOpenGL 
         main.cpp 
-        "src/glad.c"
-        DrawTriangle.cpp
-        include/LearnOpenGLHeader.h)
+        "lib/glad.c"
+        src/DrawTriangle.cpp
+        include/LearnOpenGLHeader.h
+        utils/Shader.h
+        utils/ShaderReader.h)
 
 # 链接 GLFW GLAD OpenGL
 target_link_libraries(TestOpenGL glfw "-framework OpenGL")
