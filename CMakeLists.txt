@@ -35,7 +35,8 @@ add_executable(TestOpenGL
         src/DrawTriangle.cpp
         include/LearnOpenGLHeader.h
         utils/Shader.h
-        utils/ShaderReader.h)
+        utils/ShaderReader.h
+        src/LearnOpenGL.cpp)
 
 # 链接 GLFW GLAD OpenGL
 target_link_libraries(TestOpenGL glfw "-framework OpenGL")
