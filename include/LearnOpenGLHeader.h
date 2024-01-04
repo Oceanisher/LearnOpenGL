@@ -6,6 +6,11 @@
 
 //绘制三角形
 int DrawTriangle();
+//绘制移动三角形
+int DrawMoveTriangle();
+
+
+
 //开启窗口
 GLFWwindow* OpenWd();
 //回调函数，用来处理窗口大小变化时，重新设置OpenGL的渲染窗口大小

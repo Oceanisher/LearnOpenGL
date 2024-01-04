@@ -9,7 +9,29 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "ShaderReader.h"
+
+//读取文件内容
+std::string Read(const char* path)
+{
+    std::ifstream file;
+    file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    try
+    {
+        file.open(path);
+        std::stringstream stream;
+        // read file's buffer contents into streams
+        stream << file.rdbuf();
+        // close file handlers
+        file.close();
+        // convert stream into string
+        return stream.str();
+    }
+    catch (std::ifstream::failure& e)
+    {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+    }
+    return NULL;
+}
 
 //Shader程序类
 //读取两个Shader、创建Program
@@ -19,11 +41,12 @@ public :
     unsigned int Idx;
     Shader(const char* vPath, const char* fPath)
     {
-        ShaderReader reader;
         //读取顶点shader
-        const char* vContent = reader.Read(vPath).c_str();
+        std::string vStr = Read(vPath);
+        const char* vContent = vStr.c_str();
         //读取片段shader
-        const char* fContent = reader.Read(fPath).c_str();
+        std::string fStr = Read(fPath);
+        const char* fContent = fStr.c_str();
         
         //Shader处理
         unsigned int vertex, fragment;
@@ -49,9 +72,16 @@ public :
         glDeleteShader(fragment);
     };
     
+    //使用
     void Use()
     {
         glUseProgram(Idx);
+    }
+    
+    //删除
+    void Delete()
+    {
+        glDeleteProgram(Idx);
     }
 
 private:

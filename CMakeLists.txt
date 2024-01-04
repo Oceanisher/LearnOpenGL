@@ -24,7 +24,8 @@ include_directories("${GLFW_HOME}/include")
 include_directories("${GLAD_HOME}/include")
 
 # 添加 GLFW3 预编译库
-add_library(glfw SHARED IMPORTED)
+add_library(glfw SHARED IMPORTED
+        src/shader/MoveTriangle.cpp)
 SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
 
 
@@ -35,8 +36,8 @@ add_executable(TestOpenGL
         src/DrawTriangle.cpp
         include/LearnOpenGLHeader.h
         utils/Shader.h
-        utils/ShaderReader.h
-        src/LearnOpenGL.cpp)
+        src/LearnOpenGL.cpp
+        src/shader/MoveTriangle.cpp)
 
 # 链接 GLFW GLAD OpenGL
 target_link_libraries(TestOpenGL glfw "-framework OpenGL")
