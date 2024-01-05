@@ -83,6 +83,36 @@ public :
     {
         glDeleteProgram(Idx);
     }
+    
+    //设置Bool
+    void SetBool(const std::string &name, bool value) const
+    {
+        glUniform1i(glGetUniformLocation(Idx, name.c_str()), (int)value);
+    }
+    
+    //设置Int
+    void SetInt(const std::string &name, int value) const
+    {
+        glUniform1i(glGetUniformLocation(Idx, name.c_str()), value);
+    }
+    
+    //设置Float值
+    void SetFloat(const std::string &name, float value) const
+    {
+        glUniform1f(glGetUniformLocation(Idx, name.c_str()), value);
+    }
+
+    //设置Vec3
+    void SetVec3(const std::string &name, float x, float y, float z)
+    {
+        glUniform3f(glGetUniformLocation(Idx, name.c_str()), x, y, z);
+    }
+    
+    //设置Vec4
+    void SetVec4(const std::string &name, float x, float y, float z, float w)
+    {
+        glUniform4f(glGetUniformLocation(Idx, name.c_str()), x, y, z, w);
+    }
 
 private:
     // utility function for checking shader compilation/linking errors.

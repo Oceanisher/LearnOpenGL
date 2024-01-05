@@ -35,7 +35,7 @@ add_executable(TestOpenGL
         "lib/glad.c"
         src/DrawTriangle.cpp
         include/LearnOpenGLHeader.h
-        utils/Shader.h
+        include/Shader.h
         src/LearnOpenGL.cpp
         src/shader/MoveTriangle.cpp)
 
