@@ -117,8 +117,8 @@ int DrawTextureTest()
 
     //生成着色器程序
     Shader shader(
-            "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest.vsh",
-            "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest.fsh");
+            "src/TextureTest/TextureTest.vsh",
+            "src/TextureTest/TextureTest.fsh");
 
     //生成VAO/VBO/EBO
     unsigned int VAO, VBO, EBO;
@@ -126,8 +126,8 @@ int DrawTextureTest()
     
     //生成纹理1、纹理2
     unsigned int TextureIdx1, TextureIdx2;
-    GenTexture(&TextureIdx1, "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest1.jpg", 0);
-    GenTexture(&TextureIdx2, "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest2.png", 1);
+    GenTexture(&TextureIdx1, "src/TextureTest/TextureTest1.jpg", 0);
+    GenTexture(&TextureIdx2, "src/TextureTest/TextureTest2.png", 1);
 
     //使用的着色器程序
     shader.Use();
