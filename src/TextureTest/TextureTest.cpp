@@ -49,7 +49,7 @@ void GenTextureTestData(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO)
 }
 
 //生成纹理
-void GenTexture(unsigned int* TextureIdx)
+void GenTexture(unsigned int* TextureIdx, char const *filename, int count)
 {
     //生成纹理引用
     glGenTextures(1, TextureIdx);
@@ -61,13 +61,25 @@ void GenTexture(unsigned int* TextureIdx)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    //因为OpenGL要求y轴0.0坐标是在图片的底部的，但是图片的y轴0.0坐标通常在顶部。
+    //很幸运，stb_image.h能够在图像加载时帮助我们翻转y轴，只需要在加载任何图像前加入以下语句
+    stbi_set_flip_vertically_on_load(true);
+
     //读取纹理、绑定纹理
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest.jpg", &width, &height, &nrChannels, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+    unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
+    if (0 == count)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+    }
+    else
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+    }
     
     //释放原始纹理数据
     stbi_image_free(data);
@@ -93,9 +105,16 @@ int DrawTextureTest()
     unsigned int VAO, VBO, EBO;
     GenTextureTestData(&VAO, &VBO, &EBO);
     
-    //生成
-    unsigned int TextureIdx;
-    GenTexture(&TextureIdx);
+    //生成纹理1、纹理2
+    unsigned int TextureIdx1, TextureIdx2;
+    GenTexture(&TextureIdx1, "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest1.jpg", 0);
+    GenTexture(&TextureIdx2, "/Users/oceanisher/Documents/LearnOpenGL/LearnOpenGL/src/TextureTest/TextureTest2.png", 1);
+
+    //使用的着色器程序
+    shader.Use();
+    //设置Shader的纹理，2个纹理都要设置
+    shader.SetInt("texture1", 0);
+    shader.SetInt("texture2", 1);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -105,8 +124,11 @@ int DrawTextureTest()
         //清屏
         GlClear();
 
-        //使用的着色器程序
-        shader.Use();
+        //必须每帧绑定下
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, TextureIdx1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, TextureIdx2);
 
         //按照三角形绘制顶点
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
