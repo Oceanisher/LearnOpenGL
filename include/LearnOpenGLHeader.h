@@ -4,6 +4,9 @@
 
 #include <GLFW/glfw3.h>
 
+#define MOUSE_ZOOM_IN  1
+#define MOUSE_ZOOM_OUT 2
+
 //绘制三角形
 int DrawTriangle();
 //绘制移动三角形

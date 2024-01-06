@@ -85,6 +85,25 @@ void GenTexture(unsigned int* TextureIdx, char const *filename, int count)
     stbi_image_free(data);
 }
 
+//鼠标滚轮滚动的设置纹理显隐
+double textureTestScroll = 0;
+
+//监听滚轮
+void OnTextureTestScroll(GLFWwindow* window, double x, double y)
+{
+    textureTestScroll += y / 10;
+    if (textureTestScroll > 1)
+    {
+        textureTestScroll = 1;
+    }
+    if (textureTestScroll < 0)
+    {
+        textureTestScroll = 0;
+    }
+}
+
+
+
 //绘制移动三角形
 int DrawTextureTest()
 {
@@ -115,6 +134,9 @@ int DrawTextureTest()
     //设置Shader的纹理，2个纹理都要设置
     shader.SetInt("texture1", 0);
     shader.SetInt("texture2", 1);
+    
+    //监听鼠标滚轮
+    glfwSetScrollCallback(window, OnTextureTestScroll);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -123,6 +145,9 @@ int DrawTextureTest()
         processInput(window);
         //清屏
         GlClear();
+        
+        //每帧设置透明度值
+        shader.SetFloat("textureVal", (float)textureTestScroll);
 
         //必须每帧绑定下
         glActiveTexture(GL_TEXTURE0);
