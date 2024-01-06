@@ -8,6 +8,8 @@
 int DrawTriangle();
 //绘制移动三角形
 int DrawMoveTriangle();
+//绘制移动三角形
+int DrawTextureTest();
 
 
 

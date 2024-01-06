@@ -36,8 +36,10 @@ add_executable(TestOpenGL
         src/DrawTriangle.cpp
         include/LearnOpenGLHeader.h
         include/Shader.h
+        include/stb_image.h
         src/LearnOpenGL.cpp
-        src/shader/MoveTriangle.cpp)
+#        src/shader/MoveTriangle.cpp
+        src/TextureTest/TextureTest.cpp)
 
 # 链接 GLFW GLAD OpenGL
 target_link_libraries(TestOpenGL glfw "-framework OpenGL")

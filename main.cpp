@@ -3,5 +3,6 @@
 int main()
 {
 //    DrawTriangle();
-    DrawMoveTriangle();
+//    DrawMoveTriangle();
+    DrawTextureTest();
 }
