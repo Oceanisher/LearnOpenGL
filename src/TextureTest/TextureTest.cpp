@@ -5,10 +5,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../include/stb_image.h"
 
-#include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
-
 //生成VAO/VBO/EBO
 void GenTextureTestData(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO)
 {

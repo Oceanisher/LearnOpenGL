@@ -16,17 +16,19 @@ set(CMAKE_CXX_STANDARD 17)
 # 暂存环境变量
 # set(GLFW_HOME $ENV{GLFW_HOME})
 # set(GLAD_HOME $ENV{GLAD_HOME})
-set(GLFW_HOME "/Users/oceanisher/Downloads/glfw-3.3.9.bin.MACOS")
-set(GLAD_HOME "/Users/oceanisher/Downloads/glad")
+set(GLFW_HOME "/Users/xianyu/Downloads/glfw-3.3.9.bin.MACOS")
+set(GLAD_HOME "/Users/xianyu/Downloads/glad")
+set(GLM_HOME "/Users/xianyu/Downloads/glm")
 
 # 设置头文件目录
 include_directories("${GLFW_HOME}/include")
 include_directories("${GLAD_HOME}/include")
+include_directories("${GLM_HOME}/glm")
 
 # 添加 GLFW3 预编译库
 add_library(glfw SHARED IMPORTED
         src/shader/MoveTriangle.cpp)
-SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
+SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-x86_64/libglfw.3.dylib")
 
 
 # 创建可执行文件
@@ -39,7 +41,9 @@ add_executable(TestOpenGL
         include/stb_image.h
         src/LearnOpenGL.cpp
 #        src/shader/MoveTriangle.cpp
-        src/TextureTest/TextureTest.cpp)
+#        src/TextureTest/TextureTest.cpp
+        src/MatrixTest/MatrixTest.h
+)
 
 # 链接 GLFW GLAD OpenGL
 target_link_libraries(TestOpenGL glfw "-framework OpenGL")
