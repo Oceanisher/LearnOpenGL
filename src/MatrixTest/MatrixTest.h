@@ -49,13 +49,6 @@ public:
         shader.SetInt("texture1", 0);
         shader.SetInt("texture2", 1);
 
-        //生成位置向量
-        glm::vec4 vec(0.0f, 0.0f, 0.0f, 1.0f);
-        //生成位移向量
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.4f, 0.4f, 0.0f));
-        vec = trans * vec;
-
         //渲染循环
         while(!glfwWindowShouldClose(window))
         {
@@ -65,8 +58,17 @@ public:
             GlClear();
 
             //每帧设置位置
-            std::cout << "x=" << vec.x << " " << "y=" << vec.y << " " << "z=" << vec.z << std::endl;
-            shader.SetVec3("randomPos", vec.x, vec.y, vec.z);
+            double time = glfwGetTime();
+            double sinVal = sin(time);
+            double cosVal = cos(time);
+            //生成4*4矩阵
+            glm::mat4 trans = glm::mat4(1.0f);
+            //矩阵旋转、缩放、位移
+            trans = glm::rotate(trans, glm::radians(360.0f * (float)sinVal), glm::vec3(0.0, 0.0, 1.0));
+            trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0) * (float)cosVal);
+            trans = glm::translate(trans, glm::vec3(0.4f * (float)sinVal, 0.4f * (float)cosVal, 0.0f));
+            glm::vec4 test = trans * glm::vec4(0.5f,  0.5f, 0.0f, 1.0);
+            shader.SetMatrix("transform", trans);
 
             //必须每帧绑定下
             glActiveTexture(GL_TEXTURE0);

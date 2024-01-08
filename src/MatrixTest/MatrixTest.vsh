@@ -6,11 +6,11 @@ layout (location = 2) in vec2 vTexture;
 out vec3 outColor;
 out vec2 textCoor;
 
-uniform vec3 randomPos;
+uniform mat4 transform;
 
 void main()
 {
-    gl_Position = vec4(vPos + randomPos, 1.0);
+    gl_Position = transform * vec4(vPos, 1.0);
     outColor = vColor;
-    textCoor = vec2(vTexture.x, vTexture.y);
+    textCoor = vTexture;
 }

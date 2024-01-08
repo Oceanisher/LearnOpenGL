@@ -4,6 +4,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>
@@ -112,6 +115,12 @@ public :
     void SetVec4(const std::string &name, float x, float y, float z, float w)
     {
         glUniform4f(glGetUniformLocation(Idx, name.c_str()), x, y, z, w);
+    }
+    
+    //设置矩阵
+    void SetMatrix(const std::string &name, glm::mat4 matrix)
+    {
+        glUniformMatrix4fv(glGetUniformLocation(Idx, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
     }
 
 private:
