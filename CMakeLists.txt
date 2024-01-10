@@ -42,6 +42,7 @@ add_executable(TestOpenGL
 #        src/shader/MoveTriangle.cpp
 #        src/TextureTest/TextureTest.cpp
         src/MatrixTest/MatrixTest.h
+        src/MatrixTest/MatrixTest2.h
 )
 
 # 链接 GLFW GLAD OpenGL
