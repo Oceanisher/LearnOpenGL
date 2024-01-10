@@ -24,3 +24,5 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 //清屏
 void GlClear();
+//清屏+清除深度缓冲
+void GlClearAndDepth();

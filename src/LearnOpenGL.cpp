@@ -66,3 +66,13 @@ void GlClear()
     //glClear函数则是一个状态使用的函数，它使用了当前的状态来获取应该清除为的颜色
     glClear(GL_COLOR_BUFFER_BIT);
 }
+
+//清屏+清除深度缓冲
+void GlClearAndDepth()
+{
+    //glClearColor函数是一个状态设置函数
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    //glClear函数则是一个状态使用的函数，它使用了当前的状态来获取应该清除为的颜色
+    //再加上清除深度值
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
