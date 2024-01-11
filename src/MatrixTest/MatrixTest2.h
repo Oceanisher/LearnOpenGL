@@ -65,10 +65,7 @@ public:
                 glm::vec3( 1.5f,  0.2f, -1.5f),
                 glm::vec3(-1.3f,  1.0f, -1.5f)
         };
-
-        //观察空间-观察矩阵
-        glm::mat4 view = glm::mat4(1.0f);;
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        
         //齐次裁剪空间-投影矩阵
         glm::mat4 projection = glm::mat4(1.0f);;
         projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -77,7 +74,7 @@ public:
         while(!glfwWindowShouldClose(window))
         {
             //监听按键是否按下
-            processInput(window);
+            InputProc(window);
             //清屏、清除深度缓冲
             GlClearAndDepth();
             
@@ -90,6 +87,10 @@ public:
             //渲染10个同样的正方体
             for (unsigned int i = 0 ; i < 10 ; i++) {
 
+                //观察空间-观察矩阵
+                glm::mat4 view = glm::lookAt(CamPos, CamPos + CamStep, CamUp);
+
+                //模型矩阵
                 glm::mat4 model = glm::mat4(1.0f);
                 //移动
                 model = glm::translate(model, cubePositions[i]);
@@ -121,6 +122,30 @@ public:
     }
 
 private:
+    float CamSpeed = 2.0f;
+    float LastTime = 0.0f;
+    glm::vec3 CamPos = glm::vec3(0.0f, 0.0f, 3.0f) ;
+    glm::vec3 CamStep = glm::vec3(0.0f, 0.0f, -1.0f) ;
+    glm::vec3 CamUp = glm::vec3(0.0f, 1.0f, 0.0f) ;
+    
+    //按键输入监听
+    void InputProc(GLFWwindow *window)
+    {
+        float deltaTime = glfwGetTime() - LastTime;
+        LastTime = glfwGetTime();
+        float speed = CamSpeed * deltaTime;
+        if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            CamPos += speed * CamStep;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            CamPos -= speed * CamStep;
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            CamPos += speed * glm::normalize(glm::cross(CamUp, CamStep));
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            CamPos -= speed * glm::normalize(glm::cross(CamUp, CamStep));
+    }
+    
     //生成VAO/VBO
     void GenMatrixTestData(unsigned int* VAO, unsigned int* VBO)
     {
