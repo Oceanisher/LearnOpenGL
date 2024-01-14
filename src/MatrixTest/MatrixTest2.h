@@ -14,6 +14,13 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
+//鼠标X轴位置
+float MouseXPos;
+//鼠标Z轴位置
+float MouseYPos;
+//鼠标滚轮缩放
+float MouseScrollOffset;
+
 //测试矩阵
 class MatrixTest2
 {
@@ -66,9 +73,8 @@ public:
                 glm::vec3(-1.3f,  1.0f, -1.5f)
         };
         
-        //齐次裁剪空间-投影矩阵
-        glm::mat4 projection = glm::mat4(1.0f);;
-        projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        //鼠标监听
+        MouseListener(window);
         
         //渲染循环
         while(!glfwWindowShouldClose(window))
@@ -86,20 +92,12 @@ public:
 
             //渲染10个同样的正方体
             for (unsigned int i = 0 ; i < 10 ; i++) {
-
-                //观察空间-观察矩阵
-                glm::mat4 view = glm::lookAt(CamPos, CamPos + CamStep, CamUp);
-
-                //模型矩阵
-                glm::mat4 model = glm::mat4(1.0f);
-                //移动
-                model = glm::translate(model, cubePositions[i]);
-                //旋转
-                model = glm::rotate(model, (float)glfwGetTime() * glm::radians((i + 1) * 20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
                 
-                shader.SetMatrix("model", model);
-                shader.SetMatrix("view", view);
-                shader.SetMatrix("projection", projection);
+                //鼠标处理
+                MouseProc();
+
+                //矩阵处理
+                MatrixProc(shader, cubePositions, i);
 
                 //按照三角形绘制顶点
                 glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -122,6 +120,13 @@ public:
     }
 
 private:
+    float MouseLastXPos;
+    float MouseLastYPos;
+    float MouseSensitive = 0.05f;
+    float Pitch = 0.0f;
+    float Yaw = 0.0f;
+    bool IsMouseFirst = true;
+    float MouseFovScroll = 45.0f;
     float CamSpeed = 2.0f;
     float LastTime = 0.0f;
     glm::vec3 CamPos = glm::vec3(0.0f, 0.0f, 3.0f) ;
@@ -247,5 +252,77 @@ private:
 
         //释放原始纹理数据
         stbi_image_free(data);
+    }
+    
+    //矩阵处理
+    void MatrixProc(Shader shader, glm::vec3 cubePositions[], unsigned int i)
+    {
+        //齐次裁剪空间-投影矩阵
+        glm::mat4 projection = glm::mat4(1.0f);
+        projection = glm::perspective(glm::radians(MouseFovScroll += MouseScrollOffset), 800.0f / 600.0f, 0.1f, 100.0f);
+        MouseScrollOffset = 0.0f;
+        
+        //观察空间-观察矩阵
+        glm::mat4 view = glm::lookAt(CamPos, CamPos + CamStep, CamUp);
+
+        //模型矩阵
+        glm::mat4 model = glm::mat4(1.0f);
+        //移动
+        model = glm::translate(model, cubePositions[i]);
+        //旋转
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians((i + 1) * 20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+        shader.SetMatrix("model", model);
+        shader.SetMatrix("view", view);
+        shader.SetMatrix("projection", projection);
+    }
+    
+    //鼠标监听
+    void MouseProc()
+    {
+        if (IsMouseFirst)
+        {
+            IsMouseFirst = false;
+            MouseLastXPos = MouseXPos;
+            MouseLastYPos = MouseYPos;
+        }
+        else
+        {
+            //计算帧的鼠标移动
+            float xOffset = MouseLastXPos - MouseXPos;
+            float yOffset = MouseLastYPos - MouseYPos;
+            MouseLastXPos = MouseXPos;
+            MouseLastYPos = MouseYPos;
+            Pitch += MouseSensitive * yOffset;
+            Yaw += MouseSensitive * xOffset;
+        }
+        
+        //计算摄像机方向
+        glm::vec3 front;
+        front.y= sin(glm::radians(Pitch));
+        front.z = -cos(glm::radians(Pitch)) * cos(glm::radians(Yaw));
+        front.x = -cos(glm::radians(Pitch)) * sin(glm::radians(Yaw));
+        CamStep = glm::normalize(front);
+    }
+    
+    //鼠标监听
+    void MouseListener(GLFWwindow *window)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, &MatrixTest2::MouseCallback);
+        glfwSetScrollCallback(window, &MatrixTest2::MouseScrollCallback);
+    }
+
+    //鼠标监听回调
+    static void MouseCallback(GLFWwindow* window, double xPos, double yPos)
+    {
+        MouseXPos = (float)xPos;
+        MouseYPos = (float)yPos;
+    }
+    
+    //鼠标滚轮回调
+    static void MouseScrollCallback(GLFWwindow* window, double xPos, double yPos)
+    {
+        MouseScrollOffset = yPos;
     }
 };
