@@ -16,9 +16,9 @@ set(CMAKE_CXX_STANDARD 17)
 # 暂存环境变量
 # set(GLFW_HOME $ENV{GLFW_HOME})
 # set(GLAD_HOME $ENV{GLAD_HOME})
-set(GLFW_HOME "/Users/xianyu/Downloads/glfw-3.3.9.bin.MACOS")
-set(GLAD_HOME "/Users/xianyu/Downloads/glad")
-set(GLM_HOME "/Users/xianyu/Downloads/glm")
+set(GLFW_HOME "/Users/oceanisher/Downloads/glfw-3.3.9.bin.MACOS")
+set(GLAD_HOME "/Users/oceanisher/Downloads/glad")
+set(GLM_HOME "/Users/oceanisher/Downloads/glm")
 
 # 设置头文件目录
 include_directories("${GLFW_HOME}/include")
@@ -26,8 +26,9 @@ include_directories("${GLAD_HOME}/include")
 include_directories("${GLM_HOME}/glm")
 
 # 添加 GLFW3 预编译库
-add_library(glfw SHARED IMPORTED)
-SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-x86_64/libglfw.3.dylib")
+add_library(glfw SHARED IMPORTED
+        src/LightNormal/LightNormal.h)
+SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
 
 
 # 创建可执行文件
@@ -43,6 +44,7 @@ add_executable(TestOpenGL
 #        src/TextureTest/TextureTest.cpp
         src/MatrixTest/MatrixTest.h
         src/MatrixTest/MatrixTest2.h
+        src/LightNormal/LightNormal.h
 )
 
 # 链接 GLFW GLAD OpenGL
