@@ -36,42 +36,30 @@ public:
             return -1;
         }
 
+        //生成光源
         //生成着色器程序
-        Shader shader(
-                "src/MatrixTest/MatrixTest2.vsh",
-                "src/MatrixTest/MatrixTest2.fsh");
+        Shader shaderSource(
+                "src/LightNormal/LightNormal.vsh",
+                "src/LightNormal/LightNormalSource.fsh");
 
-        //生成VAO/VBO/EBO
-        unsigned int VAO, VBO;
-        GenMatrixTestData(&VAO, &VBO);
+        
+        //生成目标
+        //生成着色器程序
+        Shader shaderTarget(
+                "src/LightNormal/LightNormal.vsh",
+                "src/LightNormal/LightNormal.fsh");
 
         //生成纹理1、纹理2
         unsigned int TextureIdx1, TextureIdx2;
         GenMatrixTexture(&TextureIdx1, "src/TextureTest/TextureTest1.jpg", 0);
         GenMatrixTexture(&TextureIdx2, "src/TextureTest/TextureTest2.png", 1);
 
-        //使用的着色器程序
-        shader.Use();
-        //设置Shader的纹理，2个纹理都要设置
-        shader.SetInt("texture1", 0);
-        shader.SetInt("texture2", 1);
+        //生成VAO/VBO/EBO
+        unsigned int lightVAO, targetVAO, VBO;
+        GenMatrixTestData(&lightVAO, &targetVAO, &VBO);
 
         //开启深度测试
         glEnable(GL_DEPTH_TEST);
-
-        //定义正方体的10个位置
-        glm::vec3 cubePositions[] = {
-                glm::vec3( 0.0f,  0.0f,  0.0f),
-                glm::vec3( 2.0f,  5.0f, -15.0f),
-                glm::vec3(-1.5f, -2.2f, -2.5f),
-                glm::vec3(-3.8f, -2.0f, -12.3f),
-                glm::vec3( 2.4f, -0.4f, -3.5f),
-                glm::vec3(-1.7f,  3.0f, -7.5f),
-                glm::vec3( 1.3f, -2.0f, -2.5f),
-                glm::vec3( 1.5f,  2.0f, -2.5f),
-                glm::vec3( 1.5f,  0.2f, -1.5f),
-                glm::vec3(-1.3f,  1.0f, -1.5f)
-        };
 
         //鼠标监听
         MouseListener(window);
@@ -89,19 +77,34 @@ public:
             glBindTexture(GL_TEXTURE_2D, TextureIdx1);
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, TextureIdx2);
+            
+            //鼠标处理
+            MouseProc();
 
-            //渲染10个同样的正方体
-            for (unsigned int i = 0 ; i < 10 ; i++) {
+            //渲染光源
+            glm::vec3 lightPos = glm::vec3( 0.0f,  0.0f,  0.0f);
+            //使用的着色器程序
+            shaderSource.Use();
+            //设置Shader的纹理，2个纹理都要设置
+            shaderSource.SetInt("texture1", 0);
+            shaderSource.SetInt("texture2", 1);
+            MatrixProc(shaderSource, lightPos);
+            //按照三角形绘制顶点
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
-                //鼠标处理
-                MouseProc();
-
-                //矩阵处理
-                MatrixProc(shader, cubePositions, i);
-
-                //按照三角形绘制顶点
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+            //渲染目标
+            //使用的着色器程序
+            shaderTarget.Use();
+            //设置Shader的纹理，2个纹理都要设置
+            shaderTarget.SetInt("texture1", 0);
+            shaderTarget.SetInt("texture2", 1);
+            shaderTarget.SetFloat("ambient",  0.1f);
+            shaderTarget.SetVec3("lightColor",   1.0f, 1.0f, 1.0f);
+            shaderTarget.SetVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
+            shaderTarget.SetVec3("camPos", CamPos.x, CamPos.y, CamPos.z);
+            MatrixProc(shaderTarget, glm::vec3( 0.0f,  0.0f,  -3.0f));
+            //按照三角形绘制顶点
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
             //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
             glfwSwapBuffers(window);
@@ -110,9 +113,11 @@ public:
         }
 
         //释放shader相关
-        glDeleteVertexArrays(1, &VAO);
+        glDeleteVertexArrays(1, &lightVAO);
+        glDeleteVertexArrays(1, &targetVAO);
         glDeleteBuffers(1, &VBO);
-        shader.Delete();
+        shaderSource.Delete();
+        shaderTarget.Delete();
 
         //释放资源、退出程序
         glfwTerminate();
@@ -151,70 +156,85 @@ private:
             CamPos -= speed * glm::normalize(glm::cross(CamUp, CamStep));
     }
 
-    //生成VAO/VBO
-    void GenMatrixTestData(unsigned int* VAO, unsigned int* VBO)
+    //生成光源、目标对象VAO/VBO
+    void GenMatrixTestData(unsigned int* lightVAO, unsigned int* targetVAO, unsigned int* VBO)
     {
-        //定义一个顶点数组，位置+纹理坐标
+        //定义一个顶点数组，位置+纹理坐标+法向量
         float vertices[] = {
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, -1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
 
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
 
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+                0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
 
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
 
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
         };
+        
+        
 
-        //生成VAO/VBO
-        glGenVertexArrays(1, VAO);
+        //生成光源VAO
         glGenBuffers(1, VBO);
-
-        //绑定VAO/VBO
-        glBindVertexArray(*VAO);
+        glGenVertexArrays(1, lightVAO);
         glBindBuffer(GL_ARRAY_BUFFER, *VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+        glBindVertexArray(*lightVAO);
         //设置顶点位置
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-
         //设置顶点纹理
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+        //设置法向量
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+
+        //生成目标VAO
+        glGenVertexArrays(1, targetVAO);
+        glBindVertexArray(*targetVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+        //设置顶点位置
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        //设置顶点纹理
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        //设置法向量
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        glEnableVertexAttribArray(2);
     }
 
     //生成纹理
@@ -255,7 +275,7 @@ private:
     }
 
     //矩阵处理
-    void MatrixProc(Shader shader, glm::vec3 cubePositions[], unsigned int i)
+    void MatrixProc(Shader shader, glm::vec3 cubePosition)
     {
         //齐次裁剪空间-投影矩阵
         glm::mat4 projection = glm::mat4(1.0f);
@@ -268,9 +288,9 @@ private:
         //模型矩阵
         glm::mat4 model = glm::mat4(1.0f);
         //移动
-        model = glm::translate(model, cubePositions[i]);
+        model = glm::translate(model, cubePosition);
         //旋转
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians((i + 1) * 20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+//        model = glm::rotate(model, (float)glfwGetTime() * glm::radians((i + 1) * 20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
         shader.SetMatrix("model", model);
         shader.SetMatrix("view", view);
