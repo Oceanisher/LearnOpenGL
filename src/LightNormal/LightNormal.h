@@ -82,17 +82,18 @@ public:
             MouseProc();
 
             //渲染光源
-            glm::vec3 lightPos = glm::vec3( 0.0f,  0.0f,  0.0f);
+            glm::vec3 lightPos = glm::vec3( 5.0f,  2.0f,  -10.0f);
             //使用的着色器程序
             shaderSource.Use();
             //设置Shader的纹理，2个纹理都要设置
             shaderSource.SetInt("texture1", 0);
             shaderSource.SetInt("texture2", 1);
-            MatrixProc(shaderSource, lightPos);
+            MatrixProc(shaderSource, lightPos, false);
             //按照三角形绘制顶点
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
             //渲染目标
+            glm::vec3 targetPos = glm::vec3( -2.0f,  -1.0f,  -3.0f);
             //使用的着色器程序
             shaderTarget.Use();
             //设置Shader的纹理，2个纹理都要设置
@@ -102,7 +103,7 @@ public:
             shaderTarget.SetVec3("lightColor",   1.0f, 1.0f, 1.0f);
             shaderTarget.SetVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
             shaderTarget.SetVec3("camPos", CamPos.x, CamPos.y, CamPos.z);
-            MatrixProc(shaderTarget, glm::vec3( 0.0f,  0.0f,  -3.0f));
+            MatrixProc(shaderTarget, targetPos, true);
             //按照三角形绘制顶点
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -275,7 +276,7 @@ private:
     }
 
     //矩阵处理
-    void MatrixProc(Shader shader, glm::vec3 cubePosition)
+    void MatrixProc(Shader shader, glm::vec3 cubePosition, bool rot)
     {
         //齐次裁剪空间-投影矩阵
         glm::mat4 projection = glm::mat4(1.0f);
@@ -290,7 +291,10 @@ private:
         //移动
         model = glm::translate(model, cubePosition);
         //旋转
-//        model = glm::rotate(model, (float)glfwGetTime() * glm::radians((i + 1) * 20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        if (rot)
+        {
+            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        }
 
         shader.SetMatrix("model", model);
         shader.SetMatrix("view", view);
