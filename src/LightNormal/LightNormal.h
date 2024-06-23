@@ -82,28 +82,42 @@ public:
             MouseProc();
 
             //渲染光源
-            glm::vec3 lightPos = glm::vec3( 5.0f,  2.0f,  -10.0f);
+            glm::vec3 lightPos = glm::vec3( 1.2f, 1.0f, 2.0f);
             //使用的着色器程序
             shaderSource.Use();
             //设置Shader的纹理，2个纹理都要设置
             shaderSource.SetInt("texture1", 0);
             shaderSource.SetInt("texture2", 1);
-            MatrixProc(shaderSource, lightPos, false);
+            MatrixProc(shaderSource, lightPos, glm::vec3(0.2f), false);
             //按照三角形绘制顶点
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
             //渲染目标
-            glm::vec3 targetPos = glm::vec3( -2.0f,  -1.0f,  -3.0f);
+            glm::vec3 targetPos = glm::vec3( 1.0f,  1.0f,  1.0f);
             //使用的着色器程序
             shaderTarget.Use();
             //设置Shader的纹理，2个纹理都要设置
             shaderTarget.SetInt("texture1", 0);
             shaderTarget.SetInt("texture2", 1);
-            shaderTarget.SetFloat("ambient",  0.1f);
-            shaderTarget.SetVec3("lightColor",   1.0f, 1.0f, 1.0f);
-            shaderTarget.SetVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
             shaderTarget.SetVec3("camPos", CamPos.x, CamPos.y, CamPos.z);
-            MatrixProc(shaderTarget, targetPos, true);
+            //每帧变换光照颜色
+            glm::vec3 lightColor;
+            lightColor.x = sin(glfwGetTime() * 2.0f);
+            lightColor.y = sin(glfwGetTime() * 0.7f);
+            lightColor.z = sin(glfwGetTime() * 1.3f);
+            glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // 降低影响
+            glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+            //设置光照属性
+            shaderTarget.SetVec3("light.position",  lightPos.x, lightPos.y, lightPos.z);
+            shaderTarget.SetVec3("light.ambient",  ambientColor.x, ambientColor.y, ambientColor.z);
+            shaderTarget.SetVec3("light.diffuse",  diffuseColor.x, diffuseColor.y, diffuseColor.z); // 将光照调暗了一些以搭配场景
+            shaderTarget.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
+            //设置物体材质
+            shaderTarget.SetVec3("material.ambient",  1.0f, 0.5f, 0.31f);
+            shaderTarget.SetVec3("material.diffuse",  1.0f, 0.5f, 0.31f);
+            shaderTarget.SetVec3("material.specular", 0.5f, 0.5f, 0.5f);
+            shaderTarget.SetFloat("material.shininess", 32.0f);
+            MatrixProc(shaderTarget, targetPos, glm::vec3(1.0f), true);
             //按照三角形绘制顶点
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -276,7 +290,7 @@ private:
     }
 
     //矩阵处理
-    void MatrixProc(Shader shader, glm::vec3 cubePosition, bool rot)
+    void MatrixProc(Shader shader, glm::vec3 cubePosition, glm::vec3 cubeScale, bool rot)
     {
         //齐次裁剪空间-投影矩阵
         glm::mat4 projection = glm::mat4(1.0f);
@@ -295,6 +309,8 @@ private:
         {
             model = glm::rotate(model, (float)glfwGetTime() * glm::radians(20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         }
+        //缩放
+        model = glm::scale(model, cubeScale);
 
         shader.SetMatrix("model", model);
         shader.SetMatrix("view", view);
