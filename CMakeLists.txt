@@ -16,9 +16,12 @@ set(CMAKE_CXX_STANDARD 17)
 # 暂存环境变量
 # set(GLFW_HOME $ENV{GLFW_HOME})
 # set(GLAD_HOME $ENV{GLAD_HOME})
-set(GLFW_HOME "/Users/oceanisher/Downloads/glfw-3.3.9.bin.MACOS")
-set(GLAD_HOME "/Users/oceanisher/Downloads/glad")
-set(GLM_HOME "/Users/oceanisher/Downloads/glm")
+#set(GLFW_HOME "/Users/oceanisher/Downloads/glfw-3.3.9.bin.MACOS")
+#set(GLAD_HOME "/Users/oceanisher/Downloads/glad")
+#set(GLM_HOME "/Users/oceanisher/Downloads/glm")
+set(GLFW_HOME "third/glfw-3.3.9.bin.MACOS")
+set(GLAD_HOME "third/glad")
+set(GLM_HOME "third/glm")
 
 # 设置头文件目录
 include_directories("${GLFW_HOME}/include")
@@ -26,9 +29,17 @@ include_directories("${GLAD_HOME}/include")
 include_directories("${GLM_HOME}/glm")
 
 # 添加 GLFW3 预编译库
-add_library(glfw SHARED IMPORTED
-        src/LightNormal/LightNormal.h)
-SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
+#add_library(glfw SHARED IMPORTED
+#        src/LightNormal/LightNormal.h)
+#SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
+add_library(glfw SHARED IMPORTED)
+message("当前CPU指令集：${CMAKE_HOST_SYSTEM_PROCESSOR}")
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+    SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/${GLFW_HOME}/lib-x86_64/libglfw.3.dylib")
+else ()
+    SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/${GLFW_HOME}/lib-arm64/libglfw.3.dylib")
+endif ()
+
 
 
 # 创建可执行文件
