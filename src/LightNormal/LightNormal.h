@@ -51,8 +51,9 @@ public:
 
         //生成纹理1、纹理2
         unsigned int TextureIdx1, TextureIdx2;
-        GenMatrixTexture(&TextureIdx1, "src/TextureTest/TextureTest1.jpg", 0);
-        GenMatrixTexture(&TextureIdx2, "src/TextureTest/TextureTest2.png", 1);
+        GenMatrixTexture(&TextureIdx1, "src/LightNormal/diffuse.png", 0);
+//        GenMatrixTexture(&TextureIdx1, "src/TextureTest/TextureTest1.jpg", 0);
+        GenMatrixTexture(&TextureIdx2, "src/LightNormal/specular.png", 1);
 
         //生成VAO/VBO/EBO
         unsigned int lightVAO, targetVAO, VBO;
@@ -97,26 +98,23 @@ public:
             //使用的着色器程序
             shaderTarget.Use();
             //设置Shader的纹理，2个纹理都要设置
-            shaderTarget.SetInt("texture1", 0);
-            shaderTarget.SetInt("texture2", 1);
             shaderTarget.SetVec3("camPos", CamPos.x, CamPos.y, CamPos.z);
             //每帧变换光照颜色
-            glm::vec3 lightColor;
-            lightColor.x = sin(glfwGetTime() * 2.0f);
-            lightColor.y = sin(glfwGetTime() * 0.7f);
-            lightColor.z = sin(glfwGetTime() * 1.3f);
-            glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // 降低影响
-            glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+//            glm::vec3 lightColor;
+//            lightColor.x = sin(glfwGetTime() * 2.0f);
+//            lightColor.y = sin(glfwGetTime() * 0.7f);
+//            lightColor.z = sin(glfwGetTime() * 1.3f);
+//            glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // 降低影响
+//            glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
             //设置光照属性
             shaderTarget.SetVec3("light.position",  lightPos.x, lightPos.y, lightPos.z);
-            shaderTarget.SetVec3("light.ambient",  ambientColor.x, ambientColor.y, ambientColor.z);
-            shaderTarget.SetVec3("light.diffuse",  diffuseColor.x, diffuseColor.y, diffuseColor.z); // 将光照调暗了一些以搭配场景
+            shaderTarget.SetVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+            shaderTarget.SetVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
             shaderTarget.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
             //设置物体材质
-            shaderTarget.SetVec3("material.ambient",  1.0f, 0.5f, 0.31f);
-            shaderTarget.SetVec3("material.diffuse",  1.0f, 0.5f, 0.31f);
-            shaderTarget.SetVec3("material.specular", 0.5f, 0.5f, 0.5f);
-            shaderTarget.SetFloat("material.shininess", 32.0f);
+            shaderTarget.SetInt("material.diffuse",  0);
+            shaderTarget.SetInt("material.specular", 1);
+            shaderTarget.SetFloat("material.shininess", 64.0f);
             MatrixProc(shaderTarget, targetPos, glm::vec3(1.0f), true);
             //按照三角形绘制顶点
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -272,17 +270,33 @@ private:
         //读取纹理、绑定纹理
         int width, height, nrChannels;
         unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
-        if (0 == count)
+        if (data)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, *TextureIdx);
-        }
-        else
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+            GLenum format;
+            if (nrChannels == 1)
+                format = GL_RED;
+            else if (nrChannels == 3)
+                format = GL_RGB;
+            else if (nrChannels == 4)
+                format = GL_RGBA;
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            if (0 == count)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+            }
+            else
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, *TextureIdx);
+            }
         }
 
         //释放原始纹理数据
