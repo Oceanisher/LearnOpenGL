@@ -56,6 +56,7 @@ add_executable(TestOpenGL
         src/MatrixTest/MatrixTest.h
         src/MatrixTest/MatrixTest2.h
         src/LightNormal/LightNormal.h
+        src/LightNormal/LightMulti.h
 )
 
 # 链接 GLFW GLAD OpenGL

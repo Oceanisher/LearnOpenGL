@@ -1,7 +1,8 @@
 //#include "include/LearnOpenGLHeader.h"
 //#include "src/MatrixTest/MatrixTest.h"
 //#include "src/MatrixTest/MatrixTest2.h"
-#include "src/LightNormal/LightNormal.h"
+//#include "src/LightNormal/LightNormal.h"
+#include "src/LightNormal/LightMulti.h"
 
 int main()
 {
@@ -10,6 +11,6 @@ int main()
 //    DrawTextureTest();
 //    MatrixTest matrixTest; matrixTest.Draw();
 //    MatrixTest2 matrixTest2; matrixTest2.Draw();
-
-    LightNormal normal; normal.Draw();
+//    LightNormal normal; normal.Draw();
+    LightMulti multi; multi.Draw();
 }
