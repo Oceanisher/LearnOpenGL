@@ -45,6 +45,7 @@ struct LightSpot
     vec3 specular;
 };
 
+//这里光源数组的数量设置了多少，代码中就一定要赋值多少个光源，否则会导致全黑
 #define NR_POINT_LIGHTS 2
 #define NR_SPOT_LIGHTS 2
 
